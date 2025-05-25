@@ -8,7 +8,7 @@ A letter/number/symbol [Morse](https://fr.wikipedia.org/wiki/Code_Morse_internat
 
 Like Russia with their HF [letter beacons](https://en.wikipedia.org/wiki/Letter_beacon), it's possible to use the **Flipper Zero** as a letter/number/symbol [Morse](https://fr.wikipedia.org/wiki/Code_Morse_international) beacon. **Flipper Zero** has multiple RF interfaces (RFID, NFC and UHF) and it's possible to transmit raw data over these interfaces.
 
-This application can transmit the whole alphabet (A to Z), numbers (0 to 9) and symbols in [Morse](https://fr.wikipedia.org/wiki/Code_Morse_international) on **RFID** interface (125 kHz). Range is about 5m with a **SDR**.
+This application can transmit the whole alphabet (A to Z), numbers (0 to 9) and symbols in [Morse](https://fr.wikipedia.org/wiki/Code_Morse_international) on **RFID** interface (125 kHz). The range is about 5 meters with a small loop antenna. With an amplified loop, the range can extend to 15 meters according to my measurements.
 
 ## Gallery
 
@@ -45,21 +45,26 @@ The program will automatically be launched after compilation
 
 button  | function
 ------------- | -------------
-**Left/Right** *[short press]* | Select the letter/number to transmit. It's possible to change letter/number during transmitting. 
-**Up** *[long press]*  | Enable/disable the transmitter (125 kHz)
+**Left/Right** *[short press]* | Select the letter/number to transmit or the value of tick/pause in ms
+**Left/Right** *[long press]* | Select the value of tick/pause in ms (more)
+**Up/Down** *[short press]* | Navigate in the menu
+**Ok** *[long press]*  | Enable/disable the transmission on 125 kHz
 **Back** *[long press]*  | Exit
 
 If you don't want to build this application, just simply copy **flipper_rfidbeacon.fap** on your **Flipper Zero** 
 
-Build has been made with official toolchain, **API Mismatch** error may appear if you are using custom firmware. You can bypass this error but the program may crash.
+Build has been made with official toolchain (1.3.4), **API Mismatch** error may appear if you are using custom firmware. You can bypass this error but the program may crash.
 
 ## What's next ?
-* Choose the speed morse code 
+* ~~Choose the speed morse code~~ **DONE !**
 * Transmit on NFC interface (13.56 MHz), range is wider than **RFID**
 * Transmit on UHF interface (433 MHz, etc)
 * Transmit personalized text message over the air
 
 ## Changelog
+
+* 2025-05-25
+  * Now it's possible to choose the transmission speed and the duration of the pause between transmissions
 
 * 2023-07-11
   * Bug fixing
