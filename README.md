@@ -57,11 +57,16 @@ Build has been made with official toolchain (1.3.4), **API Mismatch** error may 
 
 ## What's next ?
 * ~~Choose the speed morse code~~ **DONE !**
-* Transmit on NFC interface (13.56 MHz), range is wider than **RFID**
+* ~~Transmit on NFC interface (13.56 MHz), range is wider than **RFID**~~ **DONE !**
 * Transmit on UHF interface (433 MHz, etc)
 * Transmit personalized text message over the air
 
 ## Changelog
+
+* 2025-05-29
+  * Add TX to the NFC interface (13.56 MHz)
+  * Pause between transmissions is now accurate
+  * - is now used to display a dash instead of _
 
 * 2025-05-25
   * Now it's possible to choose the transmission speed and the duration of the pause between transmissions

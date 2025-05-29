@@ -8,11 +8,13 @@
 #include <input/input.h>
 #include <notification/notification_messages.h>
 #include <furi_hal_rfid.h>
+#include <furi_hal_nfc.h>
 
 typedef enum {
     EventTypeInput,
     ClockEventTypeTick,
     ClockEventTypeTickPause,
+    EventStartTransmission,
 } EventType;
 
 typedef struct {
@@ -31,6 +33,7 @@ typedef struct {
     uint16_t clockTickValue;
     uint16_t pauseValue;
     uint8_t selectMenu;
+    uint8_t transmissionMode;
 } mutexStruct;
 
 static void draw_callback(Canvas* canvas, void* ctx) 
@@ -44,8 +47,16 @@ static void draw_callback(Canvas* canvas, void* ctx)
 
     canvas_set_font(canvas, FontPrimary);
 
-    if (mutexDraw.enableCW_mutex == 0) canvas_draw_str_aligned(canvas, 64, 5, AlignCenter, AlignCenter, "RFID Beacon - OFF");
-    else canvas_draw_str_aligned(canvas, 64, 5, AlignCenter, AlignCenter, "RFID Beacon - ON");
+    if (mutexDraw.transmissionMode == 0)
+    {
+        if (mutexDraw.enableCW_mutex == 0) canvas_draw_str_aligned(canvas, 64, 5, AlignCenter, AlignCenter, "RFID Beacon - OFF");
+        else canvas_draw_str_aligned(canvas, 64, 5, AlignCenter, AlignCenter, "RFID Beacon - ON");
+    }
+    else
+    {
+        if (mutexDraw.enableCW_mutex == 0) canvas_draw_str_aligned(canvas, 64, 5, AlignCenter, AlignCenter, "NFC Beacon - OFF");
+        else canvas_draw_str_aligned(canvas, 64, 5, AlignCenter, AlignCenter, "NFC Beacon - ON");
+    } 
 
     char buffer[32];
     uint8_t positionBuffer = 0;
@@ -75,7 +86,7 @@ static void draw_callback(Canvas* canvas, void* ctx)
 
         if ((CW_value[mutexDraw.status] & maskMorse) != 0)
         {
-            buffer[positionBuffer++] = '_';
+            buffer[positionBuffer++] = '-';
         }
         else
         {
@@ -155,6 +166,28 @@ void RFID_OFF(NotificationApp* notification)
     }
 }
 
+static uint8_t NFC_STATUS = 0;
+void NFC_ON(NotificationApp* notification)
+{
+    if (NFC_STATUS == 0)
+    {
+        notification_message(notification, &sequence_set_only_blue_255);
+        furi_hal_nfc_low_power_mode_stop();
+        furi_hal_nfc_poller_field_on();
+        NFC_STATUS = 1;
+    }
+}
+
+void NFC_OFF(NotificationApp* notification)
+{
+    if (NFC_STATUS == 1)
+    {
+        notification_message(notification, &sequence_reset_blue);
+        furi_hal_nfc_low_power_mode_start();
+        NFC_STATUS = 0;
+    }
+}
+
 int32_t flipper_rfidbeacon_app() 
 {
     EventApp event;
@@ -166,6 +199,7 @@ int32_t flipper_rfidbeacon_app()
     mutexVal.clockTickValue = 250;
     mutexVal.pauseValue = 3000;
     mutexVal.selectMenu = 0;
+    mutexVal.transmissionMode = 0;
 
     mutexVal.mutex= furi_mutex_alloc(FuriMutexTypeNormal);
     if(!mutexVal.mutex)
@@ -189,8 +223,15 @@ int32_t flipper_rfidbeacon_app()
     uint16_t letterState = 0;
     uint8_t letterPosition = 0;
     uint8_t letterChosen = 0;
+    uint8_t lastTransmission = 0;
 
     uint8_t draw = 0;
+
+    // 0 : RFID, 1 : NFC
+    uint8_t transmissionMode = 0;
+    uint8_t transmissionModeMenu = transmissionMode;
+
+    furi_hal_nfc_acquire();
 
     while(1) 
     {
@@ -203,28 +244,44 @@ int32_t flipper_rfidbeacon_app()
             {
                 break;
             }
-            else if(event.input.key == InputKeyOk && event.input.type == InputTypeLong)
+            else if (event.input.key == InputKeyOk)
             {
-                furi_mutex_acquire(mutexVal.mutex, FuriWaitForever);
 
-                if (enableCW == 0)
+                if (event.input.type == InputTypeLong)
                 {
-                    enableCW = 1;
-                    letterPosition = 0;
-                    draw = 0;
-                    furi_timer_start(timer, mutexVal.clockTickValue);
-                }
-                else 
-                {
-                    RFID_OFF(notification);
-                    enableCW = 0;
-                    furi_timer_stop(timer);
-                    furi_timer_stop(timerPause);
-                }
+                    furi_mutex_acquire(mutexVal.mutex, FuriWaitForever);
 
-                mutexVal.enableCW_mutex = enableCW;
-                screenRefresh = 1;
-                furi_mutex_release(mutexVal.mutex);
+                    if (enableCW == 0)
+                    {
+                        enableCW = 1;
+                        transmissionMode = transmissionModeMenu;
+                        EventApp eventTx = {.type = EventStartTransmission};
+                        furi_message_queue_put(event_queue, &eventTx, 0);
+                    }
+                    else 
+                    {
+                        if (transmissionMode == 0) RFID_OFF(notification);
+                        else if (transmissionMode == 1) NFC_OFF(notification);
+                        enableCW = 0;
+                        furi_timer_stop(timer);
+                        furi_timer_stop(timerPause);
+                    }
+
+                    mutexVal.enableCW_mutex = enableCW;
+                    screenRefresh = 1;
+                    furi_mutex_release(mutexVal.mutex);
+                }
+                else if (event.input.type == InputTypeShort)
+                {
+                    if (transmissionModeMenu == 0) transmissionModeMenu = 1;
+                    else transmissionModeMenu = 0;
+
+                    furi_mutex_acquire(mutexVal.mutex, FuriWaitForever);
+                    mutexVal.transmissionMode = transmissionModeMenu;
+                    furi_mutex_release(mutexVal.mutex);
+
+                    screenRefresh = 1;
+                }
             }
             else if(event.input.key == InputKeyLeft && event.input.type == InputTypeShort)
             {
@@ -259,7 +316,13 @@ int32_t flipper_rfidbeacon_app()
             {
                 furi_mutex_acquire(mutexVal.mutex, FuriWaitForever);
                 
-                if (mutexVal.selectMenu == 1)
+                if (mutexVal.selectMenu == 0)
+                {
+                    if (mutexVal.status >= 10) mutexVal.status -= 10;
+                    else mutexVal.status = 53-10+mutexVal.status+1;
+                    screenRefresh = 1;
+                }
+                else if (mutexVal.selectMenu == 1)
                 {
                     if (mutexVal.clockTickValue >= 150)
                     {
@@ -291,6 +354,7 @@ int32_t flipper_rfidbeacon_app()
             else if(event.input.key == InputKeyRight && event.input.type == InputTypeShort)
             {
                 furi_mutex_acquire(mutexVal.mutex, FuriWaitForever);
+
                 if (mutexVal.selectMenu == 0)
                 {
                     if (mutexVal.status != 53) mutexVal.status++;
@@ -319,6 +383,12 @@ int32_t flipper_rfidbeacon_app()
             else if(event.input.key == InputKeyRight && event.input.type == InputTypeLong)
             {
                 furi_mutex_acquire(mutexVal.mutex, FuriWaitForever);
+                if (mutexVal.selectMenu == 0)
+                {
+                    if (mutexVal.status <= 43) mutexVal.status += 10;
+                    else mutexVal.status = 10-(53-mutexVal.status)-1;
+                    screenRefresh = 1;
+                }
                 if (mutexVal.selectMenu == 1)
                 {
                     if (mutexVal.clockTickValue <= 900)
@@ -373,68 +443,85 @@ int32_t flipper_rfidbeacon_app()
 
             }
         }
-        else if (event.type == ClockEventTypeTick)
+        else if (event.type == ClockEventTypeTick || event.type == EventStartTransmission)
         {
-            if (enableCW == 1)
+            if (event.type == EventStartTransmission)
             {
-                if (draw == 0)
-                {
-                    if (letterPosition == 0)
-                    {
-                        furi_mutex_acquire(mutexVal.mutex, FuriWaitForever);
-                        letterChosen = mutexVal.status;
-                        furi_mutex_release(mutexVal.mutex);
-                    }
+                draw = 0;
+                letterState = 0;
+                letterPosition = 0;
+                lastTransmission = 0;
+                furi_timer_start(timer, mutexVal.clockTickValue);
+            }
 
-                    if (letterPosition == CW_size[letterChosen])
+            if (draw == 0)
+            {
+                if (letterPosition == 0)
+                {
+                    furi_mutex_acquire(mutexVal.mutex, FuriWaitForever);
+                    letterChosen = mutexVal.status;
+                    furi_mutex_release(mutexVal.mutex);
+                }
+
+                if (letterPosition == CW_size[letterChosen] - 1)
+                {
+                    lastTransmission = 1;
+                }
+
+                uint8_t mask = 0b10000000;
+                mask >>= letterPosition;
+                if ((CW_value[letterChosen] & mask) != 0) draw = 2;
+                else draw = 1;
+                letterState = 0;
+                letterPosition++;
+            }
+
+            // DOT
+            if (draw == 1)
+            {
+                if (letterState == 0)
+                {
+                    if (transmissionMode == 0) RFID_ON(notification);
+                    else if (transmissionMode == 1) NFC_ON(notification);
+                    letterState = 1;
+                }
+                else
+                {
+                    if (transmissionMode == 0) RFID_OFF(notification);
+                    else if (transmissionMode == 1) NFC_OFF(notification);
+                    draw = 0;
+                    letterState = 0;
+
+                    if (lastTransmission == 1)
                     {
-                        draw = 0;
-                        letterPosition = 0;
                         furi_timer_stop(timer);
                         furi_timer_start(timerPause, mutexVal.pauseValue);
                     }
-                    else
-                    {
-                        uint8_t mask = 0b10000000;
-                        mask >>= letterPosition;
-                        if ((CW_value[letterChosen] & mask) != 0) draw = 2;
-                        else draw = 1;
-                        letterState = 0;
-                        letterPosition++;
-                    }
                 }
-
-                // DOT
-                if (draw == 1)
+            }
+            // DASH
+            else if (draw == 2)
+            {
+                if (letterState == 0)
                 {
-                    if (letterState == 0)
-                    {
-                        RFID_ON(notification);
-                        letterState = 1;
-                    }
+                    if (transmissionMode == 0) RFID_ON(notification);
+                    else if (transmissionMode == 1) NFC_ON(notification);
+                    letterState = 1;
+                }
+                else
+                {
+                    if (letterState != 3) letterState++;
                     else
                     {
-                        RFID_OFF(notification);
+                        if (transmissionMode == 0) RFID_OFF(notification);
+                        else if (transmissionMode == 1) NFC_OFF(notification);
                         draw = 0;
                         letterState = 0;
-                    }
-                }
-                // DASH
-                else if (draw == 2)
-                {
-                    if (letterState == 0)
-                    {
-                        RFID_ON(notification);
-                        letterState = 1;
-                    }
-                    else
-                    {
-                        if (letterState != 3) letterState++;
-                        else
+
+                        if (lastTransmission == 1)
                         {
-                            RFID_OFF(notification);
-                            draw = 0;
-                            letterState = 0;
+                            furi_timer_stop(timer);
+                            furi_timer_start(timerPause, mutexVal.pauseValue);
                         }
                     }
                 }
@@ -443,15 +530,18 @@ int32_t flipper_rfidbeacon_app()
         else if (event.type == ClockEventTypeTickPause)
         {
             furi_timer_stop(timerPause);
-            furi_timer_start(timer, mutexVal.clockTickValue);
-            letterState = 0;
-            draw = 0;
+            transmissionMode = transmissionModeMenu;
+            EventApp eventTx = {.type = EventStartTransmission};
+            furi_message_queue_put(event_queue, &eventTx, 0);
         }
 
         if (screenRefresh == 1) view_port_update(view_port);
     }
 
     RFID_OFF(notification);
+    NFC_OFF(notification);
+
+    furi_hal_nfc_release();
 
     furi_timer_free(timer);
     furi_timer_free(timerPause);
