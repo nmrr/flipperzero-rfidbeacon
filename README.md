@@ -1,7 +1,7 @@
-# flipperzero-beacon
+# flipperzero-letterbeacon
 A letter/number/symbol [Morse](https://fr.wikipedia.org/wiki/Code_Morse_international) beacon on **RFID**/**NFC** interfaces of the **Flipper Zero**
 
-![banner](https://raw.githubusercontent.com/nmrr/flipperzero-rfidbeacon/main/img/banner-rfid.jpg)
+![banner](https://raw.githubusercontent.com/nmrr/flipperzero-letterbeacon/main/img/banner-rfid.jpg)
 (banner has been made with **Dall.E 2**)
 
 
@@ -18,32 +18,32 @@ Mesurements on **NFC** (13.56 MHz) will be conducted later
 
 Menu of the application:
 
-<img src="https://github.com/nmrr/flipperzero-rfidbeacon/blob/main/img/screen1.png" width=25% height=25%> <img src="https://github.com/nmrr/flipperzero-rfidbeacon/blob/main/img/screen2.png" width=25% height=25%> <img src="https://github.com/nmrr/flipperzero-rfidbeacon/blob/main/img/screen3.png" width=25% height=25%>
+<img src="https://github.com/nmrr/flipperzero-letterbeacon/blob/main/img/screen1.png" width=25% height=25%> <img src="https://github.com/nmrr/flipperzero-letterbeacon/blob/main/img/screen2.png" width=25% height=25%> <img src="https://github.com/nmrr/flipperzero-letterbeacon/blob/main/img/screen3.png" width=25% height=25%>
 
-Led of the **Flipper Zero** turns in red when transmitting. 
+The LED turns red when transmitting via RFID and blue when using NFC
 
 **Airspy Discovery HF+** **SDR** bas been used during these tests with a small loop antenna. Following measures have been made at a distance of 2m from the **Flipper Zero**.
 
 **A** letter:
 
-<img src="https://github.com/nmrr/flipperzero-rfidbeacon/blob/main/img/a.png" width=50% height=50%>
+<img src="https://github.com/nmrr/flipperzero-letterbeacon/blob/main/img/a.png" width=50% height=50%>
 
 **3** number:
 
-<img src="https://github.com/nmrr/flipperzero-rfidbeacon/blob/main/img/3.png" width=50% height=50%>
+<img src="https://github.com/nmrr/flipperzero-letterbeacon/blob/main/img/3.png" width=50% height=50%>
 
 ## Build the program
 
-Assuming the toolchain is already installed, copy **flipper_rfidbeacon** directory to **applications_user**
+Assuming the toolchain is already installed, copy **flipper_letterbeacon** directory to **applications_user**
 
 Plug your **Flipper Zero** and build the RFID beacon:
 ```
-./fbt launch_app APPSRC=applications_user/flipper_rfidbeacon
+./fbt launch_app APPSRC=applications_user/flipper_letterbeacon
 ```
 
 The program will automatically be launched after compilation
 
-<img src="https://github.com/nmrr/flipperzero-rfidbeacon/blob/main/img/flipperzero.png" width=25% height=25%>
+<img src="https://github.com/nmrr/flipperzero-letterbeacon/blob/main/img/flipperzero.png" width=25% height=25%>
 
 **Button assignments**: 
 
@@ -56,7 +56,7 @@ button  | function
 **Ok** *[long press]*  | Enable/disable the transmission
 **Back** *[long press]*  | Exit
 
-If you don't want to build this application, just simply copy **flipper_rfidbeacon.fap** on your **Flipper Zero** 
+If you don't want to build this application, just simply copy **flipper_letterbeacon.fap** on your **Flipper Zero** 
 
 Build has been made with official toolchain (1.3.4), **API Mismatch** error may appear if you are using custom firmware. You can bypass this error but the program may crash.
 
@@ -72,7 +72,7 @@ Build has been made with official toolchain (1.3.4), **API Mismatch** error may 
   * Add TX to the NFC interface (13.56 MHz)
   * Pause between transmissions is now accurate
   * '-' is now used to display a dash instead of '_'
-  * Project has been renamed from flipperzero-rfidbeacon to flipperzero-beacon
+  * Project has been renamed from flipperzero-rfidbeacon to flipperzero-letterbeacon
 
 * 2025-05-25
   * Now it's possible to choose the transmission speed and the duration of the pause between transmissions
