@@ -1,5 +1,5 @@
 # flipperzero-beacon
-A letter/number/symbol [Morse](https://fr.wikipedia.org/wiki/Code_Morse_international) beacon on using **RFID** or **NFC** interfaces of the **Flipper Zero**
+A letter/number/symbol [Morse](https://fr.wikipedia.org/wiki/Code_Morse_international) beacon on **RFID**/**NFC** interfaces of the **Flipper Zero**
 
 ![banner](https://raw.githubusercontent.com/nmrr/flipperzero-rfidbeacon/main/img/banner-rfid.jpg)
 (banner has been made with **Dall.E 2**)
