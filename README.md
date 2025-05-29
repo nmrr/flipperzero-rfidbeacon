@@ -75,8 +75,9 @@ Build has been made with official toolchain (1.3.4), **API Mismatch** error may 
   * Project has been renamed from flipperzero-rfidbeacon to flipperzero-letterbeacon
 
 * 2025-05-25
-  * Now it's possible to choose the transmission speed and the duration of the pause between transmissions
-
+  * Add customizable transmission speed
+  * Add adjustable pause timing
+    
 * 2023-07-11
   * Bug fixing
   * Symbols have been added
