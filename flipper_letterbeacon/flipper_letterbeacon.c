@@ -49,13 +49,13 @@ static void draw_callback(Canvas* canvas, void* ctx)
 
     if (mutexDraw.transmissionMode == 0)
     {
-        if (mutexDraw.enableCW_mutex == 0) canvas_draw_str_aligned(canvas, 64, 5, AlignCenter, AlignCenter, "RFID Beacon - OFF");
-        else canvas_draw_str_aligned(canvas, 64, 5, AlignCenter, AlignCenter, "RFID Beacon - ON");
+        if (mutexDraw.enableCW_mutex == 0) canvas_draw_str_aligned(canvas, 64, 5, AlignCenter, AlignCenter, "RFID (125 kHz) - OFF");
+        else canvas_draw_str_aligned(canvas, 64, 5, AlignCenter, AlignCenter, "RFID (125 kHz) - ON");
     }
     else
     {
-        if (mutexDraw.enableCW_mutex == 0) canvas_draw_str_aligned(canvas, 64, 5, AlignCenter, AlignCenter, "NFC Beacon - OFF");
-        else canvas_draw_str_aligned(canvas, 64, 5, AlignCenter, AlignCenter, "NFC Beacon - ON");
+        if (mutexDraw.enableCW_mutex == 0) canvas_draw_str_aligned(canvas, 64, 5, AlignCenter, AlignCenter, "NFC (13.56 MHz) - OFF");
+        else canvas_draw_str_aligned(canvas, 64, 5, AlignCenter, AlignCenter, "NFC (13.56 MHz) - ON");
     } 
 
     char buffer[32];
@@ -188,7 +188,7 @@ void NFC_OFF(NotificationApp* notification)
     }
 }
 
-int32_t flipper_rfidbeacon_app() 
+int32_t flipper_letterbeacon_app() 
 {
     EventApp event;
     FuriMessageQueue* event_queue = furi_message_queue_alloc(8, sizeof(EventApp));
@@ -451,17 +451,14 @@ int32_t flipper_rfidbeacon_app()
                 letterState = 0;
                 letterPosition = 0;
                 lastTransmission = 0;
+                furi_mutex_acquire(mutexVal.mutex, FuriWaitForever);
+                letterChosen = mutexVal.status;
+                furi_mutex_release(mutexVal.mutex);
                 furi_timer_start(timer, mutexVal.clockTickValue);
             }
 
             if (draw == 0)
             {
-                if (letterPosition == 0)
-                {
-                    furi_mutex_acquire(mutexVal.mutex, FuriWaitForever);
-                    letterChosen = mutexVal.status;
-                    furi_mutex_release(mutexVal.mutex);
-                }
 
                 if (letterPosition == CW_size[letterChosen] - 1)
                 {
