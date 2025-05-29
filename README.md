@@ -1,4 +1,4 @@
-# flipperzero-rfidbeacon
+# flipperzero-beacon
 A letter/number/symbol [Morse](https://fr.wikipedia.org/wiki/Code_Morse_international) beacon on using **RFID** or **NFC** interfaces of the **Flipper Zero**
 
 ![banner](https://raw.githubusercontent.com/nmrr/flipperzero-rfidbeacon/main/img/banner-rfid.jpg)
@@ -71,7 +71,8 @@ Build has been made with official toolchain (1.3.4), **API Mismatch** error may 
 * 2025-05-29
   * Add TX to the NFC interface (13.56 MHz)
   * Pause between transmissions is now accurate
-  * - is now used to display a dash instead of _
+  * '-' is now used to display a dash instead of '_'
+  * Project has been renamed from flipperzero-rfidbeacon to flipperzero-beacon
 
 * 2025-05-25
   * Now it's possible to choose the transmission speed and the duration of the pause between transmissions
