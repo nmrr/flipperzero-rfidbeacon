@@ -10,9 +10,10 @@ Like Russia with their HF [letter beacons](https://en.wikipedia.org/wiki/Letter_
 
 This application can transmit the whole alphabet (A to Z), numbers (0 to 9) and symbols in [Morse](https://fr.wikipedia.org/wiki/Code_Morse_international) via **RFID** (125 kHz) and **NFC** (13.56 MHz) interfaces.
 
-On **RFID** (125 kHz) range is about 5 meters with a small loop antenna. With an amplified loop, the range can extend to 15 meters according to my measurements.
+On **RFID** (125 kHz) range is about 5 meters with a small loop antenna. With an amplified loop, the range can extend to 15 meters according to my measurements. 
 
-Mesurements on **NFC** (13.56 MHz) will be conducted later
+On **NFC** (13.56 MHz) range is about 50 meters with a small loop antenna. 
+
 
 ## Gallery
 
@@ -31,6 +32,14 @@ The LED turns red when transmitting via RFID and blue when using NFC
 **3** number:
 
 <img src="https://github.com/nmrr/flipperzero-letterbeacon/blob/main/img/3.png" width=50% height=50%>
+
+**NFC** at 65m:
+
+<img src="https://github.com/nmrr/flipperzero-letterbeacon/blob/main/img/Screenshot_20250615-171102.png" width=50% height=50%>
+
+**RFID** at 10m:
+
+<img src="https://github.com/nmrr/flipperzero-letterbeacon/blob/main/img/Screenshot_20250615-171754.png" width=50% height=50%>
 
 ## Build the program
 
